@@ -82,20 +82,21 @@
   nav {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    overflow-x: auto;
+    padding: 0 1rem;
   }
 
   .nav-inner {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
+    flex-wrap: wrap;
     gap: 0;
   }
 
   .nav-btn {
-    padding: 12px 20px;
-    font-size: 13px;
+    padding: 10px 12px;
+    font-size: 12px;
+    -webkit-tap-highlight-color: transparent;
     font-family: inherit;
     font-weight: 400;
     color: var(--text2);
@@ -119,7 +120,7 @@
   main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1.25rem 1rem;
   }
 
   .section { display: none; }
@@ -131,10 +132,11 @@
   }
 
   .section-header h2 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 4px;
+    line-height: 1.4;
   }
 
   .section-header p {
@@ -144,9 +146,9 @@
 
   /* カードグリッド */
   .grid { display: grid; gap: 14px; }
-  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
-  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
 
   .card {
     background: var(--surface);
@@ -230,7 +232,7 @@
   }
 
   .metric-val {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--text);
   }
@@ -287,6 +289,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 12px;
   }
@@ -314,8 +317,10 @@
   }
 
   /* テーブル */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .data-table {
     width: 100%;
+    min-width: 480px;
     border-collapse: collapse;
     font-size: 12px;
   }
@@ -354,10 +359,23 @@
 
   /* レスポンシブ */
   @media (max-width: 640px) {
-    main { padding: 1rem; }
+    main { padding: 1rem 0.75rem; }
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
     .header-inner { padding: 0; }
-    header, nav { padding: 0 1rem; }
+    header { padding: 0 0.75rem; }
+    nav { padding: 0 0.25rem; }
+    .nav-btn { padding: 9px 10px; font-size: 11.5px; }
+    .section-header h2 { font-size: 16px; }
+    .section-header p { font-size: 10.5px; }
+    .giin-name { font-size: 14px; }
+    .metric-val { font-size: 18px; }
+    .card { padding: 1rem; }
+    .giin-card { padding: 1rem; }
+    .data-table th, .data-table td { padding: 8px 8px; font-size: 11.5px; }
+    .badge { font-size: 9.5px; padding: 2px 6px; }
+    .score-label { width: 64px; font-size: 10.5px; }
+    pre { font-size: 10px !important; padding: 10px !important; }
+    footer { padding: 1rem 0.75rem; flex-direction: column; align-items: flex-start; }
   }
 
   /* 区切り */
@@ -396,6 +414,7 @@
   <div class="nav-inner">
     <button class="nav-btn active" onclick="showSection('weekly')">週次ウォッチ</button>
     <button class="nav-btn" onclick="showSection('giin')">議員別ウォッチ</button>
+    <button class="nav-btn" onclick="showSection('tosen')">当選議員の動き</button>
     <button class="nav-btn" onclick="showSection('rakusen')">落選議員</button>
     <button class="nav-btn" onclick="showSection('sns')">SNS比較</button>
     <button class="nav-btn" onclick="showSection('prompt')">プロンプト集</button>
@@ -491,13 +510,13 @@
     <div class="card">
       <div class="card-title">来週の注目ポイント</div>
       <div class="card-sub">2026年5月第3週</div>
-      <table class="data-table">
+      <div class="table-wrap"><table class="data-table">
         <tr><td><span class="badge badge-blue">中道</span></td><td>5月中に予定される3党統一地方選共通政策の取りまとめ（階幹事長が表明）</td></tr>
         <tr><td><span class="badge badge-amber">公明</span></td><td>竹谷代表の独自打ち出しが出るか。参院選前に独自色が消えるリスク</td></tr>
         <tr><td><span class="badge badge-gray">立民</span></td><td>参院側から独自政策を打ち出せるかが存在感回復の鍵</td></tr>
         <tr><td><span class="badge badge-green">岡本</span></td><td>緊急経済対策の具体数値発表があるか</td></tr>
         <tr><td><span class="badge badge-green">いさ</span></td><td>落選者支援制度への批判が収束するか。参院選向け広報戦略の発表に注目</td></tr>
-      </table>
+      </table></div>
     </div>
 
   </div>
@@ -584,7 +603,7 @@
     <div class="card">
       <div class="card-title">2人が「話題になっている」理由の本質</div>
       <div class="card-sub">他の中道系議員との決定的な違い</div>
-      <table class="data-table">
+      <div class="table-wrap"><table class="data-table">
         <thead><tr><th>要素</th><th>内容</th></tr></thead>
         <tbody>
           <tr><td><span class="badge badge-green">継続性</span></td><td>落選期間・大敗後も発信を止めなかった。多くの議員が「選挙のときだけ発信」するのと対照的。</td></tr>
@@ -592,10 +611,151 @@
           <tr><td><span class="badge badge-purple">専門性ブランド</span></td><td>岡本議員はゴールドマン出身・財務副大臣経験を前面に。政策通としての信頼資産。</td></tr>
           <tr><td><span class="badge badge-amber">党外リーチ</span></td><td>いさ議員は足立康史・細野豪志・ReHacQプロデューサーらとの対談で支持者外に意図的にリーチ。</td></tr>
         </tbody>
-      </table>
+      </table></div>
     </div>
 
   </div>
+</div>
+
+<!-- ===== 当選議員の動き ===== -->
+<div id="tosen" class="section">
+  <div class="section-header">
+    <h2>当選議員の動き</h2>
+    <p>2026年2月衆院選で当選した中道改革連合議員（岡本・いさ以外）の活動状況　｜　調査日：2026年5月9日</p>
+  </div>
+
+  <!-- サマリー -->
+  <div class="grid grid-4" style="margin-bottom:1.5rem;">
+    <div class="metric-card"><div class="metric-val">49</div><div class="metric-label">中道当選議員数</div></div>
+    <div class="metric-card"><div class="metric-val" style="color:var(--teal);">28</div><div class="metric-label">公明系（全員当選）</div></div>
+    <div class="metric-card"><div class="metric-val" style="color:var(--blue);">21</div><div class="metric-label">旧立民系</div></div>
+    <div class="metric-card"><div class="metric-val" style="color:var(--amber);">3</div><div class="metric-label">副代表ポスト</div></div>
+  </div>
+
+  <!-- 執行部・役職就任議員 -->
+  <div class="section-header" style="margin-top:0;">
+    <h2 style="font-size:15px;">執行部・役職就任議員</h2>
+  </div>
+  <div class="grid grid-2" style="margin-bottom:1.5rem;">
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">早稲田夕季</div>
+          <div class="giin-role">中道改革連合 副代表・衆院4期（比例南関東）</div>
+        </div>
+        <span class="badge badge-green">🟢 役職あり</span>
+      </div>
+      <div class="highlight">2026年2月18日に副代表に就任。旧立民系女性議員の代表格として党の「顔」の一人に。小選挙区では自民新人に敗れたが、自民の比例名簿不足による「おこぼれ復活」で当選。ネクスト厚生労働大臣経験者として社会保障分野での発信が期待されるが、副代表としての独自打ち出しは現時点では限定的。</div>
+      <div class="tag-row">
+        <span class="badge badge-blue">副代表（2/18就任）</span>
+        <span class="badge badge-amber">おこぼれ復活と批判も</span>
+        <span class="badge badge-gray">独自発信は限定的</span>
+      </div>
+    </div>
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">西村智奈美</div>
+          <div class="giin-role">中道改革連合 副代表・衆院8期（比例北陸信越）</div>
+        </div>
+        <span class="badge badge-green">🟢 役職あり</span>
+      </div>
+      <div class="highlight">2026年2月18日に副代表に就任。旧立民代表経験者（2021〜22年）として党内では重鎮扱い。小選挙区では自民新人に約2万票差で敗れたが比例復活。旧立民幹事長代行経験を持ち、参院選に向けた組織運営を担う立場に。ただし副代表としての対外的な情報発信は現時点では少ない。</div>
+      <div class="tag-row">
+        <span class="badge badge-blue">副代表（2/18就任）</span>
+        <span class="badge badge-purple">旧立民代表経験者</span>
+        <span class="badge badge-gray">対外発信は少なめ</span>
+      </div>
+    </div>
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">長妻昭</div>
+          <div class="giin-role">中道改革連合・衆院10期（比例東京）</div>
+        </div>
+        <span class="badge badge-amber">🟡 活動継続中</span>
+      </div>
+      <div class="highlight">東京27区で自民に約4000票差で敗れたが、自民の比例名簿不足で比例復活し10選。3月には「与党側が暫定予算を作ると明言」と毎日新聞に発言が引用されるなど、予算審議で存在感を維持。元厚生労働相として社会保障分野での発言力は健在だが、かつての「ミスター年金」ほどの突出した発信は現時点では見られない。</div>
+      <div class="tag-row">
+        <span class="badge badge-amber">おこぼれ復活・10選</span>
+        <span class="badge badge-blue">予算審議で発言継続</span>
+        <span class="badge badge-gray">突出した発信は少ない</span>
+      </div>
+    </div>
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">落合貴之</div>
+          <div class="giin-role">中道改革連合・衆院5期（比例東京）</div>
+        </div>
+        <span class="badge badge-amber">🟡 活動継続中</span>
+      </div>
+      <div class="highlight">東京6区で自民に1万票以上の差で敗れたが、自民の比例名簿不足で比例復活し5選。読売新聞のインタビューで「野党の役割果たしていきたい」と発言。2025年に著書「民のかまどをあたためる」がブックオブザイヤー受賞。インボイス問題検討議員連盟幹事長として中小企業・フリーランス向け政策での独自色を持つ。</div>
+      <div class="tag-row">
+        <span class="badge badge-amber">おこぼれ復活・5選</span>
+        <span class="badge badge-green">著書・政策での独自色</span>
+        <span class="badge badge-blue">インボイス問題に注力</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 公明系当選議員 -->
+  <div class="section-header">
+    <h2 style="font-size:15px;">公明系当選議員の特徴（全28人当選）</h2>
+  </div>
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-title">全員当選の背景と現在の立ち位置</div>
+    <div class="table-wrap"><table class="data-table">
+      <thead><tr><th>ポイント</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-green">全員当選</span></td>
+          <td>公明系28人は全ブロックで比例名簿上位に配置され全員当選。旧立民系が「公明に比例を譲りすぎた」と批判した通り、公明系が圧倒的に有利な比例配分だった。</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">党内バランス</span></td>
+          <td>岡本（政調会長）・いさ（広報委員長）・山本香苗（代表代行）・石井啓一（衆院副議長）と公明系が要職を独占。旧立民系からは不満の声が出ている。</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-amber">山本香苗 代表代行</span></td>
+          <td>公明系元参院議員。衆院選当選で国政復帰し即座に代表代行に就任。参院側の公明ネットワークとのパイプ役として機能。ただし対外的な情報発信は現時点では少ない。</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">石井啓一 衆院副議長</span></td>
+          <td>公明党最多当選（11期）・元代表・元閣僚。慣例により党籍を離脱して就任。公明系出身の衆院副議長は憲政史上初。</td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- プロンプトG -->
+  <div class="card">
+    <div class="card-title">プロンプトG：当選議員ウォッチリスト生成（随時）</div>
+    <div class="card-sub">新たな注目株を発掘するためのプロンプト</div>
+    <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">中道系（中道改革連合・公明・立憲民主中道派）の当選議員の中から、
+情報発信の観点で「注目すべき新たな人物」を発掘してください。
+
+【発掘基準】
+1. SNSフォロワー急増・バズ経験
+2. 政策提言・独自の切り口での発信
+3. 若年層・無党派層へのリーチ
+4. メディア露出の増加傾向
+
+【除外】
+- 岡本みつなり・いさ進一（別途ウォッチ中）
+- 発信が党の公式広報のコピーに過ぎない者
+
+【出力形式】
+議員名 ／ 所属 ／ 注目理由（2行）／ 主な発信チャネル ／ ウォッチ優先度（高・中・低）
+
+最大10名をリストアップしてください。</pre>
+  </div>
+
 </div>
 
 <!-- ===== 落選議員 ===== -->
@@ -614,7 +774,7 @@
 
   <div class="card" style="margin-bottom:14px;">
     <div class="card-title">主要落選議員の現状</div>
-    <table class="data-table">
+    <div class="table-wrap"><table class="data-table">
       <thead>
         <tr>
           <th style="width:120px;">議員名</th>
@@ -673,16 +833,16 @@
           <td><span class="badge badge-red">離党連鎖中・要注意</span></td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 
   <div class="card">
     <div class="card-title">党としての落選者支援制度</div>
-    <table class="data-table">
+    <div class="table-wrap"><table class="data-table">
       <tr><td style="width:80px;"><span class="badge badge-amber">3月</span></td><td>階幹事長がクラウドファンディング発表（年内1億円目標）→批判殺到</td></tr>
       <tr><td><span class="badge badge-amber">4月</span></td><td>月額約40万円の落選者支援制度を発表（5月開始）→「ハローワークに行け」とSNSで批判</td></tr>
       <tr><td><span class="badge badge-green">5月〜</span></td><td>支援制度が実際に始動。いさ進一広報委員長が「私生活には使えない」と説明役に奮闘</td></tr>
-    </table>
+    </table></div>
   </div>
 </div>
 
@@ -719,7 +879,7 @@
 
     <div class="card">
       <div class="card-title">各党の戦略特性</div>
-      <table class="data-table">
+      <div class="table-wrap"><table class="data-table">
         <thead><tr><th>政党・人物</th><th>戦略の核心</th><th>評価</th></tr></thead>
         <tbody>
           <tr>
@@ -743,7 +903,7 @@
             <td><span class="badge badge-amber">低下中</span></td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </div>
 
     <div class="card">
@@ -780,7 +940,7 @@
     <div class="card">
       <div class="card-title">プロンプトA：中道系3党 埋没リスク診断（週1〜2回）</div>
       <div class="card-sub">毎週月〜火曜に実行推奨</div>
-      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">以下の政党・政治家について、直近7日間の情報発信状況を調査し、「存在感スコア」「発信内容の質」「メディア露出」の3軸で評価してください。
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">以下の政党・政治家について、直近7日間の情報発信状況を調査し、「存在感スコア」「発信内容の質」「メディア露出」の3軸で評価してください。
 
 【調査対象】
 ■ 政党
@@ -810,7 +970,7 @@
     <div class="card">
       <div class="card-title">プロンプトB：落選・埋没議員 定点観測（月1〜2回）</div>
       <div class="card-sub">月初に実行推奨</div>
-      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">2026年2月の選挙で「中道系」として戦い、落選または当選後も活動が見えない議員について調査してください。
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">2026年2月の選挙で「中道系」として戦い、落選または当選後も活動が見えない議員について調査してください。
 
 【調査の視点】
 1. 落選後の活動継続状況（SNS更新・地盤維持・市民活動）
@@ -825,7 +985,7 @@
     <div class="card">
       <div class="card-title">プロンプトC：好事例分析（自民党・チームみらい）</div>
       <div class="card-sub">2週間ごとに実行推奨</div>
-      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">選挙後の戦略的広報活動の好事例として、自民党とチームみらいの情報発信を分析してください。
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">選挙後の戦略的広報活動の好事例として、自民党とチームみらいの情報発信を分析してください。
 
 【分析軸】
 1. コンテンツ戦略（プラットフォーム・頻度・形式）
@@ -840,7 +1000,7 @@
     <div class="card">
       <div class="card-title">プロンプトD：SNSベンチマーク（X・YouTube特化）</div>
       <div class="card-sub">月1回実行推奨</div>
-      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">以下の政党・会派のSNSを横断的に比較し、エンゲージメントと戦略を評価してください。
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">以下の政党・会派のSNSを横断的に比較し、エンゲージメントと戦略を評価してください。
 
 【比較対象】
 - 自民党（党公式 + 総裁アカウント）
@@ -863,7 +1023,7 @@
     <div class="card">
       <div class="card-title">プロンプトE：週次統合ダイジェスト（毎週月曜）</div>
       <div class="card-sub">全体を1本にまとめる統合プロンプト</div>
-      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">【中道政治ウォッチ週次レポート】
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">【中道政治ウォッチ週次レポート】
 実行日：[日付を入力]
 
 以下の項目を1本のレポートにまとめてください。
@@ -882,7 +1042,7 @@
     <div class="card">
       <div class="card-title">プロンプトF：岡本・いさ議員 個別深堀り</div>
       <div class="card-sub">月1〜2回、個人の発信力分析</div>
-      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">岡本みつなり議員といさ進一議員について、以下の観点で個別分析してください。
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);word-break:break-word;">岡本みつなり議員といさ進一議員について、以下の観点で個別分析してください。
 
 【岡本三成議員】
 1. 離党・新党参加後の発信スタンスの変化

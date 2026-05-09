@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中道ウォッチ | 週次政治リサーチダッシュボード</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap');
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: rgba(0,0,0,0.08);
+    --text: #1a1a18;
+    --text2: #5a5a56;
+    --text3: #9a9a94;
+    --teal: #0F6E56;
+    --teal-l: #E1F5EE;
+    --amber: #854F0B;
+    --amber-l: #FAEEDA;
+    --red: #A32D2D;
+    --red-l: #FCEBEB;
+    --blue: #185FA5;
+    --blue-l: #E6F1FB;
+    --purple: #3C3489;
+    --purple-l: #EEEDFE;
+    --gray: #5F5E5A;
+    --gray-l: #F1EFE8;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ヘッダー */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    gap: 1rem;
+  }
+
+  .site-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .site-title span {
+    color: var(--teal);
+  }
+
+  .header-meta {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ナビゲーション */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    overflow-x: auto;
+  }
+
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+  }
+
+  .nav-btn {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 400;
+    color: var(--text2);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover { color: var(--text); }
+
+  .nav-btn.active {
+    color: var(--teal);
+    border-bottom-color: var(--teal);
+    font-weight: 500;
+  }
+
+  /* メインコンテンツ */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* セクションヘッダー */
+  .section-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .section-header p {
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  /* カードグリッド */
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 1rem;
+  }
+
+  /* バッジ */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-weight: 500;
+  }
+
+  .badge-green { background: var(--teal-l); color: var(--teal); }
+  .badge-amber { background: var(--amber-l); color: var(--amber); }
+  .badge-red { background: var(--red-l); color: var(--red); }
+  .badge-blue { background: var(--blue-l); color: var(--blue); }
+  .badge-purple { background: var(--purple-l); color: var(--purple); }
+  .badge-gray { background: var(--gray-l); color: var(--gray); }
+
+  /* スコアバー */
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--text2);
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  .bar-bg {
+    flex: 1;
+    height: 5px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--teal);
+  }
+
+  .score-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    width: 24px;
+    text-align: right;
+  }
+
+  /* メトリクスカード */
+  .metric-card {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .metric-label {
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* ハイライトボックス */
+  .highlight {
+    border-left: 2px solid var(--teal);
+    background: var(--teal-l);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #085041;
+    line-height: 1.7;
+  }
+
+  .warn {
+    border-left: 2px solid var(--amber);
+    background: var(--amber-l);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #633806;
+    line-height: 1.7;
+  }
+
+  .alert {
+    border-left: 2px solid var(--red);
+    background: var(--red-l);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #791F1F;
+    line-height: 1.7;
+  }
+
+  /* 議員カード */
+  .giin-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+  }
+
+  .giin-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .giin-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .giin-role {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* タグ */
+  .tag-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* チャートラッパー */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  /* テーブル */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+
+  /* 更新日 */
+  .update-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 3px 10px;
+    background: var(--teal-l);
+    color: var(--teal);
+    border-radius: 99px;
+    font-weight: 500;
+  }
+
+  /* レスポンシブ */
+  @media (max-width: 640px) {
+    main { padding: 1rem; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .header-inner { padding: 0; }
+    header, nav { padding: 0 1rem; }
+  }
+
+  /* 区切り */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+  .spacer { height: 1rem; }
+  .spacer-lg { height: 1.5rem; }
+
+  /* フッター */
+  footer {
+    max-width: 1200px;
+    margin: 3rem auto 0;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="site-title">中道<span>ウォッチ</span></div>
+    <div class="header-meta">
+      <span class="update-badge">最終更新：2026年5月9日</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showSection('weekly')">週次ウォッチ</button>
+    <button class="nav-btn" onclick="showSection('giin')">議員別ウォッチ</button>
+    <button class="nav-btn" onclick="showSection('rakusen')">落選議員</button>
+    <button class="nav-btn" onclick="showSection('sns')">SNS比較</button>
+    <button class="nav-btn" onclick="showSection('prompt')">プロンプト集</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ===== 週次ウォッチ ===== -->
+<div id="weekly" class="section active">
+  <div class="section-header">
+    <h2>中道系 埋没リスク診断（週次）</h2>
+    <p>調査対象：中道改革連合・公明党・立憲民主党（中道路線派）＋注目個人　｜　調査日：2026年5月9日</p>
+  </div>
+
+  <div class="grid grid-2">
+
+    <!-- 中道改革連合 -->
+    <div class="card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">中道改革連合</div>
+          <div class="giin-role">代表：小川淳也 ／ 衆院49議席</div>
+        </div>
+        <span class="badge badge-amber">🟡 埋没度：中</span>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:12px;">
+        <div class="metric-card"><div class="metric-val">6.5</div><div class="metric-label">存在感</div></div>
+        <div class="metric-card"><div class="metric-val">7.0</div><div class="metric-label">発信の質</div></div>
+        <div class="metric-card"><div class="metric-val">6.0</div><div class="metric-label">メディア</div></div>
+      </div>
+      <div class="score-row"><span class="score-label">SNS頻度</span><div class="bar-bg"><div class="bar-fill" style="width:70%;"></div></div><span class="score-num">7.0</span></div>
+      <div class="score-row"><span class="score-label">政策提言</span><div class="bar-bg"><div class="bar-fill" style="width:75%;background:#185FA5;"></div></div><span class="score-num">7.5</span></div>
+      <div class="score-row"><span class="score-label">大手報道</span><div class="bar-bg"><div class="bar-fill" style="width:55%;background:#854F0B;"></div></div><span class="score-num">5.5</span></div>
+      <div class="warn">5/8：小川代表定例会見・三党合同政調審議会でイラン情勢踏まえた緊急経済対策を打ち出し。一方、沖縄知事選の対応が未定で内部対立報道が足を引く。</div>
+      <div class="tag-row">
+        <span class="badge badge-green">毎日note更新</span>
+        <span class="badge badge-blue">三党合同政調</span>
+        <span class="badge badge-amber">沖縄知事選が火種</span>
+      </div>
+    </div>
+
+    <!-- 公明党 -->
+    <div class="card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">公明党（参院・地方組織）</div>
+          <div class="giin-role">代表：竹谷とし子 ／ 2026年1月就任</div>
+        </div>
+        <span class="badge badge-red">🔴 埋没度：高</span>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:12px;">
+        <div class="metric-card"><div class="metric-val">4.0</div><div class="metric-label">存在感</div></div>
+        <div class="metric-card"><div class="metric-val">5.5</div><div class="metric-label">発信の質</div></div>
+        <div class="metric-card"><div class="metric-val">3.5</div><div class="metric-label">メディア</div></div>
+      </div>
+      <div class="score-row"><span class="score-label">SNS頻度</span><div class="bar-bg"><div class="bar-fill" style="width:45%;"></div></div><span class="score-num">4.5</span></div>
+      <div class="score-row"><span class="score-label">政策提言</span><div class="bar-bg"><div class="bar-fill" style="width:40%;background:#185FA5;"></div></div><span class="score-num">4.0</span></div>
+      <div class="score-row"><span class="score-label">大手報道</span><div class="bar-bg"><div class="bar-fill" style="width:30%;background:#854F0B;"></div></div><span class="score-num">3.0</span></div>
+      <div class="alert">衆院議員が全員中道に移籍し「発信の顔」を失う。竹谷代表のXはコメ助投稿中心。地方選結果告知が主な発信。独自打ち出しが見えない。</div>
+      <div class="tag-row">
+        <span class="badge badge-red">国会での主役不在</span>
+        <span class="badge badge-amber">地方選告知が中心</span>
+        <span class="badge badge-green">地方3000議員は潜在資産</span>
+      </div>
+    </div>
+
+    <!-- 立憲民主党 -->
+    <div class="card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">立憲民主党（参院・中道路線派）</div>
+          <div class="giin-role">衆院議員は中道に合流済み</div>
+        </div>
+        <span class="badge badge-red">🔴 埋没度：高</span>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:12px;">
+        <div class="metric-card"><div class="metric-val">4.5</div><div class="metric-label">存在感</div></div>
+        <div class="metric-card"><div class="metric-val">5.0</div><div class="metric-label">発信の質</div></div>
+        <div class="metric-card"><div class="metric-val">4.0</div><div class="metric-label">メディア</div></div>
+      </div>
+      <div class="score-row"><span class="score-label">SNS頻度</span><div class="bar-bg"><div class="bar-fill" style="width:50%;"></div></div><span class="score-num">5.0</span></div>
+      <div class="score-row"><span class="score-label">政策提言</span><div class="bar-bg"><div class="bar-fill" style="width:45%;background:#185FA5;"></div></div><span class="score-num">4.5</span></div>
+      <div class="score-row"><span class="score-label">大手報道</span><div class="bar-bg"><div class="bar-fill" style="width:38%;background:#854F0B;"></div></div><span class="score-num">3.8</span></div>
+      <div class="alert">党HPのニュースは4月下旬で更新が停止。参院選に向けた独自の訴求軸が定まっていない。三党合同政調には参加するが党独自の発信は見えにくい。</div>
+      <div class="tag-row">
+        <span class="badge badge-red">独自発信ほぼ停止</span>
+        <span class="badge badge-amber">参院選軸が不明確</span>
+      </div>
+    </div>
+
+    <!-- 来週の注目 -->
+    <div class="card">
+      <div class="card-title">来週の注目ポイント</div>
+      <div class="card-sub">2026年5月第3週</div>
+      <table class="data-table">
+        <tr><td><span class="badge badge-blue">中道</span></td><td>5月中に予定される3党統一地方選共通政策の取りまとめ（階幹事長が表明）</td></tr>
+        <tr><td><span class="badge badge-amber">公明</span></td><td>竹谷代表の独自打ち出しが出るか。参院選前に独自色が消えるリスク</td></tr>
+        <tr><td><span class="badge badge-gray">立民</span></td><td>参院側から独自政策を打ち出せるかが存在感回復の鍵</td></tr>
+        <tr><td><span class="badge badge-green">岡本</span></td><td>緊急経済対策の具体数値発表があるか</td></tr>
+        <tr><td><span class="badge badge-green">いさ</span></td><td>落選者支援制度への批判が収束するか。参院選向け広報戦略の発表に注目</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 議員別ウォッチ ===== -->
+<div id="giin" class="section">
+  <div class="section-header">
+    <h2>注目議員ウォッチ</h2>
+    <p>中道系で存在感を出している・出していない議員の定点観測</p>
+  </div>
+
+  <div class="grid grid-2">
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">岡本みつなり（三成）</div>
+          <div class="giin-role">中道改革連合 政務調査会長・衆院6期</div>
+        </div>
+        <span class="badge badge-green">🟢 埋没度：低</span>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:12px;">
+        <div class="metric-card"><div class="metric-val">8.0</div><div class="metric-label">存在感</div></div>
+        <div class="metric-card"><div class="metric-val">8.5</div><div class="metric-label">発信の質</div></div>
+        <div class="metric-card"><div class="metric-val">8.0</div><div class="metric-label">メディア</div></div>
+      </div>
+      <div class="score-row"><span class="score-label">SNS頻度</span><div class="bar-bg"><div class="bar-fill" style="width:72%;"></div></div><span class="score-num">7.2</span></div>
+      <div class="score-row"><span class="score-label">政策提言</span><div class="bar-bg"><div class="bar-fill" style="width:88%;background:#185FA5;"></div></div><span class="score-num">8.8</span></div>
+      <div class="score-row"><span class="score-label">大手報道</span><div class="bar-bg"><div class="bar-fill" style="width:78%;background:#854F0B;"></div></div><span class="score-num">7.8</span></div>
+      <div class="highlight">5/8に三党合同政調審議会で緊急経済対策を主導。5/7のYouTubeライブ（中谷氏と共演）でSNS新規層へのリーチを試みた。ジャパンファンド・防衛装備輸出提言・財務金融委質疑と政策テーマが一貫している。</div>
+      <div class="tag-row">
+        <span class="badge badge-green">三党政調の顔</span>
+        <span class="badge badge-blue">YouTube対談</span>
+        <span class="badge badge-purple">ジャパンファンド提言</span>
+      </div>
+    </div>
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">いさ進一（伊佐進一）</div>
+          <div class="giin-role">中道改革連合 広報委員長・衆院5期</div>
+        </div>
+        <span class="badge badge-green">🟢 埋没度：ほぼゼロ</span>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:12px;">
+        <div class="metric-card"><div class="metric-val">9.5</div><div class="metric-label">存在感</div></div>
+        <div class="metric-card"><div class="metric-val">8.5</div><div class="metric-label">発信の質</div></div>
+        <div class="metric-card"><div class="metric-val">9.0</div><div class="metric-label">メディア</div></div>
+      </div>
+      <div class="score-row"><span class="score-label">SNS頻度</span><div class="bar-bg"><div class="bar-fill" style="width:98%;"></div></div><span class="score-num">9.8</span></div>
+      <div class="score-row"><span class="score-label">政策提言</span><div class="bar-bg"><div class="bar-fill" style="width:85%;background:#185FA5;"></div></div><span class="score-num">8.5</span></div>
+      <div class="score-row"><span class="score-label">大手報道</span><div class="bar-bg"><div class="bar-fill" style="width:80%;background:#854F0B;"></div></div><span class="score-num">8.0</span></div>
+      <div class="highlight">YouTube登録者18.9万人（3月時点）。毎朝8:30のモーニングライブは1回1.5〜8万再生。落選者支援制度の発表では広報委員長として前面に立ち、「私生活には使えません」とJ-CASTほか各メディアで引用。</div>
+      <div class="tag-row">
+        <span class="badge badge-green">YouTube 18.9万人</span>
+        <span class="badge badge-blue">毎朝ライブ配信</span>
+        <span class="badge badge-amber">広報委員長として火消し役</span>
+      </div>
+    </div>
+
+    <div class="giin-card">
+      <div class="giin-head">
+        <div>
+          <div class="giin-name">重徳和彦（追加ウォッチ）</div>
+          <div class="giin-role">中道改革連合 国会対策委員長・旧立民出身</div>
+        </div>
+        <span class="badge badge-green">🟢 埋没度：低</span>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:12px;">
+        <div class="metric-card"><div class="metric-val">7.0</div><div class="metric-label">存在感</div></div>
+        <div class="metric-card"><div class="metric-val">6.5</div><div class="metric-label">発信の質</div></div>
+        <div class="metric-card"><div class="metric-val">7.5</div><div class="metric-label">メディア</div></div>
+      </div>
+      <div class="highlight">閣僚の本会議出席が認められなかったとしてSNS動画を投稿し「質問権の制約だ」と自民を批判。自民から謝罪・訂正を要求される場面を経て「適切な発信に努めてきた」と応じず。攻めのSNS発信で新たな注目株として浮上。</div>
+      <div class="tag-row">
+        <span class="badge badge-green">SNS動画で与党を批判</span>
+        <span class="badge badge-blue">国対委員長として前面に</span>
+        <span class="badge badge-red">自民から謝罪要求</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2人が「話題になっている」理由の本質</div>
+      <div class="card-sub">他の中道系議員との決定的な違い</div>
+      <table class="data-table">
+        <thead><tr><th>要素</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-green">継続性</span></td><td>落選期間・大敗後も発信を止めなかった。多くの議員が「選挙のときだけ発信」するのと対照的。</td></tr>
+          <tr><td><span class="badge badge-blue">習慣化設計</span></td><td>いさ議員の毎朝ライブは「見る習慣」を作る。視聴者が次回も来る理由がある。</td></tr>
+          <tr><td><span class="badge badge-purple">専門性ブランド</span></td><td>岡本議員はゴールドマン出身・財務副大臣経験を前面に。政策通としての信頼資産。</td></tr>
+          <tr><td><span class="badge badge-amber">党外リーチ</span></td><td>いさ議員は足立康史・細野豪志・ReHacQプロデューサーらとの対談で支持者外に意図的にリーチ。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 落選議員 ===== -->
+<div id="rakusen" class="section">
+  <div class="section-header">
+    <h2>落選・埋没議員 定点観測</h2>
+    <p>2026年2月衆院選で落選した中道改革連合・旧立民系主要議員の現状分類</p>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:1.5rem;">
+    <div class="metric-card"><div class="metric-val" style="color:var(--teal);">約30人</div><div class="metric-label">再起準備</div></div>
+    <div class="metric-card"><div class="metric-val" style="color:var(--amber);">約47人</div><div class="metric-label">静観・様子見</div></div>
+    <div class="metric-card"><div class="metric-val" style="color:var(--red);">約75人</div><div class="metric-label">沈黙・引退方向</div></div>
+    <div class="metric-card"><div class="metric-val" style="color:var(--blue);">10人超</div><div class="metric-label">離党・転身確定</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">主要落選議員の現状</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width:120px;">議員名</th>
+          <th style="width:110px;">分類</th>
+          <th>根拠・最新情報</th>
+          <th style="width:120px;">注目度</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>岡田克也</strong><br><span style="font-size:10px;color:var(--text3);">三重3区・12期落選</span></td>
+          <td><span class="badge badge-amber">静観・再起検討</span></td>
+          <td>秘書を5→4人に削減、新幹線グリーン車をやめ「節約しながら地元往復」を公言。引退か再起かは白紙。</td>
+          <td><span class="badge badge-blue">注目高</span></td>
+        </tr>
+        <tr>
+          <td><strong>枝野幸男</strong><br><span style="font-size:10px;color:var(--text3);">埼玉5区・11期落選</span></td>
+          <td><span class="badge badge-red">沈黙・転身方向</span></td>
+          <td>公式サイトは「前衆議院議員」のまま更新停止。永田町では「文化人タレント転身説」が流布。SNS更新も散発的。</td>
+          <td><span class="badge badge-amber">注目中</span></td>
+        </tr>
+        <tr>
+          <td><strong>安住淳</strong><br><span style="font-size:10px;color:var(--text3);">宮城4区・10期落選</span></td>
+          <td><span class="badge badge-red">沈黙・引きこもり</span></td>
+          <td>週刊新潮（5/7・14日号）が「港区マンションに引きこもり2カ月」と報道。地元事務所は4月末に縮小。落選者から「絶対に許さない」の声。</td>
+          <td><span class="badge badge-red">最重要ウォッチ</span></td>
+        </tr>
+        <tr>
+          <td><strong>玄葉光一郎</strong><br><span style="font-size:10px;color:var(--text3);">福島2区・11期落選</span></td>
+          <td><span class="badge badge-gray">引退方向・不明</span></td>
+          <td>「政治活動に一つの区切りをつける意向」と報道。積極的な再起を示す行動は確認されていない。</td>
+          <td><span class="badge badge-gray">ウォッチ低優先</span></td>
+        </tr>
+        <tr>
+          <td><strong>馬淵澄夫</strong><br><span style="font-size:10px;color:var(--text3);">奈良1区・8期落選</span></td>
+          <td><span class="badge badge-red">沈黙</span></td>
+          <td>比例近畿6位で落選。産経新聞が「職権乱用」と批判的に報道。落選後の目立った活動は確認されていない。</td>
+          <td><span class="badge badge-amber">注目中</span></td>
+        </tr>
+        <tr>
+          <td><strong>小沢一郎</strong><br><span style="font-size:10px;color:var(--text3);">岩手3区・19期落選</span></td>
+          <td><span class="badge badge-blue">事実上の引退</span></td>
+          <td>御年80歳。永田町では「岩手の私邸で回顧録執筆説」が流布。再起宣言・地元活動の情報なし。</td>
+          <td><span class="badge badge-gray">ウォッチ低優先</span></td>
+        </tr>
+        <tr>
+          <td><strong>吉田晴美</strong><br><span style="font-size:10px;color:var(--text3);">旧立民・若手</span></td>
+          <td><span class="badge badge-green">再起準備・注目</span></td>
+          <td>TBS NEWS DIGに3月7日出演し「中道誕生の舞台裏と大敗の分かりにくさ」を実名で語る。落選者中、唯一メディアに顔を出して内情を語った。</td>
+          <td><span class="badge badge-blue">注目高・継続ウォッチ</span></td>
+        </tr>
+        <tr>
+          <td><strong>藤原規眞ほか</strong><br><span style="font-size:10px;color:var(--text3);">複数名</span></td>
+          <td><span class="badge badge-blue">離党・転身確定</span></td>
+          <td>党のパーティー開催方針転換に反発し離党。小山千帆も政治活動から離れる意思を表明。4月13日に藤岡隆雄・藤原規真の離党発表。</td>
+          <td><span class="badge badge-red">離党連鎖中・要注意</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">党としての落選者支援制度</div>
+    <table class="data-table">
+      <tr><td style="width:80px;"><span class="badge badge-amber">3月</span></td><td>階幹事長がクラウドファンディング発表（年内1億円目標）→批判殺到</td></tr>
+      <tr><td><span class="badge badge-amber">4月</span></td><td>月額約40万円の落選者支援制度を発表（5月開始）→「ハローワークに行け」とSNSで批判</td></tr>
+      <tr><td><span class="badge badge-green">5月〜</span></td><td>支援制度が実際に始動。いさ進一広報委員長が「私生活には使えない」と説明役に奮闘</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SNS比較 ===== -->
+<div id="sns" class="section">
+  <div class="section-header">
+    <h2>政党SNS横断ベンチマーク</h2>
+    <p>X（旧Twitter）・YouTube のエンゲージメントと戦略評価</p>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:1.5rem;">
+    <div class="metric-card"><div class="metric-val">1億+</div><div class="metric-label">自民・高市動画再生数</div></div>
+    <div class="metric-card"><div class="metric-val">18.9万</div><div class="metric-label">いさ議員YouTube登録者</div></div>
+    <div class="metric-card"><div class="metric-val">8.78万</div><div class="metric-label">チームみらいYouTube</div></div>
+    <div class="metric-card"><div class="metric-val">100万</div><div class="metric-label">中道最多動画再生数</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+      <div class="card-title">YouTubeチャンネル登録者比較</div>
+      <div class="chart-wrap" style="height:220px;">
+        <canvas id="ytChart" role="img" aria-label="各党YouTubeチャンネル登録者数の横棒グラフ"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">SNS戦略3軸評価</div>
+      <div class="chart-wrap" style="height:220px;">
+        <canvas id="radarChart" role="img" aria-label="各党のSNS戦略レーダーチャート"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+
+    <div class="card">
+      <div class="card-title">各党の戦略特性</div>
+      <table class="data-table">
+        <thead><tr><th>政党・人物</th><th>戦略の核心</th><th>評価</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>自民党</strong><br><span style="font-size:10px;color:var(--text3);">高市総裁</span></td>
+            <td>広告出稿で高市動画を1億再生。首相＝党の顔が一体化。インフルエンサーから「広告費5億?」と批判も逆バズ化。</td>
+            <td><span class="badge badge-red">突出</span></td>
+          </tr>
+          <tr>
+            <td><strong>チームみらい</strong><br><span style="font-size:10px;color:var(--text3);">安野貴博</span></td>
+            <td>週次報告の「透明性ルーティン」が支持者との長期関係を構築。AI安野・ひろゆきコラボで支持者外リーチを意図設計。</td>
+            <td><span class="badge badge-blue">高い</span></td>
+          </tr>
+          <tr>
+            <td><strong>中道改革連合</strong><br><span style="font-size:10px;color:var(--text3);">党公式</span></td>
+            <td>noteで毎日の幹部日程を公開（実用的だが生活感がない）。「情報の整理」はできているが「感情を動かすコンテンツ」がない。</td>
+            <td><span class="badge badge-red">低い</span></td>
+          </tr>
+          <tr>
+            <td><strong>公明党</strong><br><span style="font-size:10px;color:var(--text3);">党公式</span></td>
+            <td>衆院議員が全員中道に移籍し「発信の顔」を失う。竹谷代表のSNSが実質的なメイン発信。</td>
+            <td><span class="badge badge-amber">低下中</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">中道系の致命的ギャップと即実行できる改善点</div>
+      <div class="alert" style="margin-bottom:10px;">
+        <strong>ギャップ①：動画の「感情温度」が低すぎる</strong><br>
+        自民は「挑戦しない国に未来はない」の1文で感情を動かすショートを作った。中道は「代表の日程のお知らせ」をYouTubeに上げている。再生数の100倍差の根本原因。
+      </div>
+      <div class="alert" style="margin-bottom:10px;">
+        <strong>ギャップ②：個人資産（いさ18.9万）と党公式が未連携</strong><br>
+        いさ議員の人気が党の知名度につながる仕組みが設計されていない。チームみらいが安野個人と党公式を連動させているのと真逆。
+      </div>
+      <div class="alert" style="margin-bottom:14px;">
+        <strong>ギャップ③：「日常接触」の設計がゼロ</strong><br>
+        チームみらいの週次報告・いさ議員の毎朝ライブは「見る習慣」を作る。中道党公式は「コンテンツのシリーズ化」が皆無。
+      </div>
+      <div class="highlight" style="margin-bottom:8px;"><strong>改善1：</strong>いさ・岡本議員との「週1コラボ配信」を党公式チャンネルで固定枠化。いさ18.9万人を党公式に誘導する最短ルート。</div>
+      <div class="highlight" style="margin-bottom:8px;"><strong>改善2：</strong>「1分政策ショート」を週3本投稿。岡本政調会長がジャパンファンド等を縦型ショートで解説するだけ。スマホ撮影・字幕のみで制作可能。</div>
+      <div class="highlight"><strong>改善3：</strong>小川代表の「週次報告note」を開始。チームみらいをトレースするだけ。毎週月曜朝に「今週やったこと・考えたこと」を投稿。</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== プロンプト集 ===== -->
+<div id="prompt" class="section">
+  <div class="section-header">
+    <h2>リサーチプロンプト集</h2>
+    <p>Claudeに貼り付けるだけで使えるプロンプト一覧</p>
+  </div>
+
+  <div class="grid grid-2">
+
+    <div class="card">
+      <div class="card-title">プロンプトA：中道系3党 埋没リスク診断（週1〜2回）</div>
+      <div class="card-sub">毎週月〜火曜に実行推奨</div>
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">以下の政党・政治家について、直近7日間の情報発信状況を調査し、「存在感スコア」「発信内容の質」「メディア露出」の3軸で評価してください。
+
+【調査対象】
+■ 政党
+- 中道改革連合
+- 公明党（2月大敗後）
+- 立憲民主党（中道路線派）
+
+■ 注目個人
+- 岡本三成議員（元公明）
+- いさ進一議員
+- ※その他、中道系で当選した議員で発信が目立つ者があれば追加
+
+【確認項目】
+1. SNS（X/YouTube/note等）の投稿頻度・内容・反応数
+2. 主要メディアへの登場有無
+3. 政策提言・記者会見・街頭活動の有無
+4. 「埋没しているか」「存在感を出せているか」の判断理由
+
+【出力形式】
+各対象につき：
+- 発信状況サマリー（3行以内）
+- 注目の発言・行動（あれば）
+- 埋没度：高/中/低
+- 来週の注目ポイント</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">プロンプトB：落選・埋没議員 定点観測（月1〜2回）</div>
+      <div class="card-sub">月初に実行推奨</div>
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">2026年2月の選挙で「中道系」として戦い、落選または当選後も活動が見えない議員について調査してください。
+
+【調査の視点】
+1. 落選後の活動継続状況（SNS更新・地盤維持・市民活動）
+2. 次期選挙に向けた布石（政治塾・後援会・地域貢献）
+3. 政策面での発信継続（寄稿・講演・メディア出演）
+4. 「再起を図っているか」「撤退したか」「沈黙しているか」の分類
+
+【出力】
+議員名 ／ 現状分類（再起準備・沈黙・転身・不明）／ 根拠となる最新情報 ／ 注目度コメント</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">プロンプトC：好事例分析（自民党・チームみらい）</div>
+      <div class="card-sub">2週間ごとに実行推奨</div>
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">選挙後の戦略的広報活動の好事例として、自民党とチームみらいの情報発信を分析してください。
+
+【分析軸】
+1. コンテンツ戦略（プラットフォーム・頻度・形式）
+2. メッセージ設計（優先政策・トーン・語りかけ方）
+3. 組織的広報の特徴（党首露出・若手活用・地方連携）
+4. 中道系が参考にできる点（真似できる戦術／難しい点）
+
+【出力】
+自民 ／ チームみらい ／ 中道系への示唆（箇条書き）</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">プロンプトD：SNSベンチマーク（X・YouTube特化）</div>
+      <div class="card-sub">月1回実行推奨</div>
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">以下の政党・会派のSNSを横断的に比較し、エンゲージメントと戦略を評価してください。
+
+【比較対象】
+- 自民党（党公式 + 総裁アカウント）
+- チームみらい（代表格アカウント）
+- 公明党（党公式）
+- 中道改革連合（党公式）
+- 立憲民主党（中道路線議員個人）
+
+【指標】
+1. 週間投稿数・インプレッション傾向
+2. 「バズった」投稿の内容・形式（あれば）
+3. リプライ・引用の質（支持者外にもリーチしているか）
+4. 動画コンテンツの活用度と再生傾向
+
+【所見】
+- 中道系が最も差をつけられている点は何か
+- 即実行できる改善点を3つ提示</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">プロンプトE：週次統合ダイジェスト（毎週月曜）</div>
+      <div class="card-sub">全体を1本にまとめる統合プロンプト</div>
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">【中道政治ウォッチ週次レポート】
+実行日：[日付を入力]
+
+以下の項目を1本のレポートにまとめてください。
+
+━━━━━━━━━━━━━━━
+① 今週の中道系ニュース（上位5件）
+② 対照：自民・チームみらいの注目発信（上位3件）
+③ 「埋没度」信号灯
+   🔴 赤：ほぼ発信なし
+   🟡 黄：散発的だが動きあり
+   🟢 緑：戦略的な発信が継続
+④ 来週の注目ポイント
+⑤ 中道系へのアドバイス（一言）</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">プロンプトF：岡本・いさ議員 個別深堀り</div>
+      <div class="card-sub">月1〜2回、個人の発信力分析</div>
+      <pre style="background:var(--surface2);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;color:var(--text);">岡本みつなり議員といさ進一議員について、以下の観点で個別分析してください。
+
+【岡本三成議員】
+1. 離党・新党参加後の発信スタンスの変化
+2. 中道改革連合内での位置づけ・影響力
+3. SNS・メディアでの情報発信の特徴と反応
+
+【いさ進一議員】
+1. 選挙後の主要発信テーマ
+2. YouTube・X の数字の動向
+3. 党内での存在感
+
+【共通分析】
+- 2人が「話題になっている」理由の本質
+- 他の中道系議員と何が違うか（再現可能な要素）</pre>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div>中道ウォッチ | 週次政治リサーチダッシュボード</div>
+  <div>最終更新：2026年5月9日　｜　次回更新予定：2026年5月16日</div>
+</footer>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const textColor = isDark ? '#c9c9c6' : '#5a5a56';
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+// YouTube登録者グラフ
+new Chart(document.getElementById('ytChart'), {
+  type: 'bar',
+  data: {
+    labels: ['自民党公式', 'いさ進一（個人）', 'チームみらい', '公明党公式', '中道改革連合'],
+    datasets: [{
+      label: 'YouTube登録者数（万人）',
+      data: [19.6, 18.9, 8.78, 4.5, 0.5],
+      backgroundColor: ['#A32D2D','#5F5E5A','#185FA5','#854F0B','#0F6E56'],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ' ' + ctx.raw.toFixed(2) + '万人' } }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 }, callback: v => v + '万' } },
+      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } }
+    }
+  }
+});
+
+// レーダーチャート
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['投稿頻度', '感情誘発力', '動画活用度', '支持者外リーチ', '日常接触設計'],
+    datasets: [
+      { label: '自民党', data: [8,9,9,8,7], borderColor: '#A32D2D', backgroundColor: 'rgba(163,45,45,.1)', borderWidth: 2, pointRadius: 2 },
+      { label: 'チームみらい', data: [9,7,8,8,9], borderColor: '#185FA5', backgroundColor: 'rgba(24,95,165,.1)', borderWidth: 2, pointRadius: 2, borderDash: [4,3] },
+      { label: '公明党', data: [5,4,4,3,4], borderColor: '#854F0B', backgroundColor: 'rgba(133,79,11,.08)', borderWidth: 1.5, pointRadius: 2, borderDash: [2,3] },
+      { label: '中道改革連合', data: [6,2,2,3,2], borderColor: '#0F6E56', backgroundColor: 'rgba(15,110,86,.08)', borderWidth: 1.5, pointRadius: 2, borderDash: [6,3] }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: true, labels: { color: textColor, font: { size: 10 }, boxWidth: 10, padding: 8 } } },
+    scales: {
+      r: {
+        min: 0, max: 10,
+        ticks: { stepSize: 2, color: textColor, font: { size: 9 }, backdropColor: 'transparent' },
+        grid: { color: gridColor },
+        pointLabels: { color: textColor, font: { size: 10 } }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
